@@ -5,6 +5,11 @@ using namespace std;
 // Optimal = Referenced
 
 /*########################-------Brute-Force---------###############################*/
+
+/*
+SC = O(N + M)
+TC = O(N + M)
+*/
 void mergeF(vector<int>& nums1, int m, vector<int>& nums2, int n) 
 {
     vector<int> tmp(m,0);
@@ -48,6 +53,12 @@ void mergeF(vector<int>& nums1, int m, vector<int>& nums2, int n)
 
 /*###########################----Optimal Approach-----#########################*/
 
+/*
+SC = O(1)
+TC = 1) For outer loop we are reducing it by 2 every time = log2(N + M)
+     2) For inner loop we are almost visiting all array son = O(N)
+     = log2(N + M) + O(N + M)
+*/
 void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) 
 {
     int iSize = m+n;

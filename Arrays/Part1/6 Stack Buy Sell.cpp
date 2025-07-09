@@ -2,6 +2,12 @@
 //Self Solved 
 //Best Optimised
 #include <bits/stdc++.h> 
+
+
+/*
+SC = O(1)
+TC = O(N)
+*/
 int maximumProfit(vector<int> &prices)
 {
     int pre=prices[0], mxProfit=0;

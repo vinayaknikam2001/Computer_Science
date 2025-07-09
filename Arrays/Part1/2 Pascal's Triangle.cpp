@@ -6,6 +6,12 @@ using namespace std;
 using lli = long long int;
 long long int mod=1e9+7;
 
+
+/*
+SC = O(N^2)
+TC = O(N^2)
+*/
+
 vector<vector<long long int>> printPascal(int n) 
 {
    vector<vector<lli>> v(n);

@@ -1,7 +1,12 @@
 //https://www.codingninjas.com/codestudio/problems/631055?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website&leftPanelTab=1
 //Self Solved
 //Using normal approach
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
+
+/*
+SC = O(1)
+TC = O(N) + O(N) = O(N)
+*/ 
 void sort012(int *arr, int n)
 {
     map<int, int> mp;
@@ -28,13 +33,18 @@ void sort012(int *arr, int n)
 
 //Optimised Approach Reduces Time complexity by Half using "Dutch National Flag Algorithm"
 //Referenced
-#include <bits/stdc++.h> 
 inline void swap(int &n1, int &n2)
 {
     int tmp = n1;
     n1 = n2;
     n2 = tmp;
 }
+
+
+/*
+SC = O(1)
+TC = O(N)
+*/
 
 void sort012(int *arr, int n)
 {

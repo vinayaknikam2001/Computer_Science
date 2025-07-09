@@ -2,6 +2,12 @@
 // Referenced
 class Solution {
 public:
+
+
+/*
+SC = O(1)
+TC = O(N^2) + O(N^2) = O(N^2)
+*/
     void rotate(vector<vector<int>>& matrix) 
     {
         int n = matrix.size(), m = matrix[0].size();

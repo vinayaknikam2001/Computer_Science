@@ -1,6 +1,13 @@
 // LeetCode Link = https://leetcode.com/problems/search-a-2d-matrix/submissions/
 // Self Sovled
 
+/*
+SC = O(1)
+TC = 1) We are traversing matrix in binary search becuase at each step there is division by 2 
+        Time complexity = O(log2(n * M)) 
+*/
+
+
 class Solution {
 public:
     bool searchMatrix(vector<vector<int>>& matrix, int target) 

@@ -4,6 +4,10 @@
 typedef long long int lli;
 typedef unsigned long long ull;
 
+/*
+SC = O(1)
+TC = O(N) //To calulate actual sum.
+*/
 
 pair<int,int> missingAndRepeating(vector<int> &arr, int n)
 {

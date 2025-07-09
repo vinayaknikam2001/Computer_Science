@@ -13,6 +13,12 @@ the intervals[i][0] < intervals[i][1]
 class Solution {
 public:
 
+
+/*
+SC = O(N*2)
+TC = O(N*log(N)) + O (N*2) =  O(N*log(N)) + O (N)
+*/
+
 vector<vector<int>> merge(vector<vector<int>>& intervals) 
 {
     int iPrev = 0, iStart = 0;

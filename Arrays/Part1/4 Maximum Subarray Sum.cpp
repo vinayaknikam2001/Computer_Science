@@ -4,6 +4,12 @@
 /* Mistakes
 	Missed a test case because of not using long long int
 */
+
+
+/*
+SC = O(1)
+TC = O(N)
+*/
 #include <bits/stdc++.h> 
 long long maxSubarraySum(int arr[], int n)
 {

@@ -2,7 +2,13 @@
 //Self Solved
 
 //Instead of using set we can also use simple array to maintain the count.
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
+
+/*
+SC = O(N+M)
+TC = O(N*M) + O(N*M) + O(N*M) = O(N*M)
+*/
+
 
 void setZeros(vector<vector<int>> &matrix)
 {

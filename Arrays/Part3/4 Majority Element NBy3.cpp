@@ -5,6 +5,11 @@
 
 class Solution {
 public:
+
+/*
+SC = O(1)
+TC = O(2N) = O(N)
+*/
     vector<int> majorityElement(vector<int>& nums) 
     {
     

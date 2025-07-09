@@ -1,6 +1,12 @@
 // LeetCode link = https://leetcode.com/problems/majority-element/description/
 // Self
 
+
+/*
+SC = O(1)
+TC = O(N)
+*/
+
 #define MOD -10e9+1
 class Solution {
 

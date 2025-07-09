@@ -1,8 +1,12 @@
 // CodeStudio Link = https://www.codingninjas.com/studio/problems/count-inversions_615?leftPanelTab=1
 // Referenced
-
-
 #include <bits/stdc++.h> 
+
+
+/*
+SC = N(log(N))
+TC = N(log(N))
+*/
 
 void merge(long long *v, int iStart, int iMid, int iEnd, int &cnt, int iN)
 {
