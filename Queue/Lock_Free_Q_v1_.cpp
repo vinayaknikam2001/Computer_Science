@@ -2,12 +2,15 @@
 using namespace std;
 typedef long long int lli;
 typedef unsigned long long ull;
+using  namespace std::chrono;
+#define MAX_TESTS 10000000
+#define MAX_T_CNT 4
 
 template<typename T>
 class HazardPointers
 {
     private:
-    static constexpr size_t MAX_THREADS = 16;
+    static constexpr size_t MAX_THREADS = 8;
     static constexpr size_t HAZARD_PER_THREAD = 2;
     static constexpr size_t RETIRE_THRESHOLD = MAX_THREADS * HAZARD_PER_THREAD * 2;
     struct alignas(64) HazardRecord 
@@ -255,11 +258,11 @@ class LockFreeQ
 
 };
 
-LockFreeQ<int> q;
+LockFreeQ<lli> q;
 
-void insertQ(int st, int end)
+void insertQ(lli st, lli end)
 {
-    for (int i=st; i<=end; ++i)
+    for (lli i=st; i<=end; ++i)
     {
         q.enqueue(i);
     }
@@ -270,33 +273,49 @@ FILE *pFile = fopen("Out.txt", "w");
 std::mutex m1;
 void removeQ()
 {
+    static lli iCnt = 0;
     while (1)
     {
-        int iVal;
+        lli iVal;
         if (q.dequeue(iVal)) {
             std::unique_lock<std::mutex> ul(m1);
-            cout << iVal << endl;
-            fprintf(pFile, "%d\n", iVal);
+            ++iCnt;
+            if (iCnt == MAX_TESTS*MAX_T_CNT) break;
+        }
+        else if (iCnt == MAX_TESTS*MAX_T_CNT)
+        {
+            return;
         }
     }
 }
     
 int main()
 {    
+    cout << "Start" << endl;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    std::thread t1(insertQ, 1, MAX_TESTS);
+    std::thread t2(insertQ, 1, MAX_TESTS);
+    std::thread t3(insertQ, 1, MAX_TESTS);
+    std::thread t4(insertQ, 1, MAX_TESTS);
     
-    std::thread t1(insertQ, 1, 20000);
-    std::thread t2(insertQ, 20001, 41000);
-    std::thread t3(insertQ, 41001, 60000);
-    //std::thread t4(removeQ);
     std::thread t5(removeQ);
+    std::thread t6(removeQ);
+    std::thread t7(removeQ);
+    std::thread t8(removeQ);
+
 
     t1.join();
     t2.join();
     t3.join();
-    //t4.join();
+    t4.join();
     t5.join();
+    t6.join();
+    t7.join();
+    t8.join();
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(endTime - startTime);
+    cout<<"Sec : "<<duration.count()/(1e6)<<endl;
     cout << "Exit" << endl;
-    fclose(pFile);
     return 0;
 }
 

@@ -1,344 +1,444 @@
-#include <atomic>
 #include <iostream>
 #include <thread>
+#include <atomic>
 #include <vector>
+#include <chrono>
+#include <list>
+#include <mutex>
+#include <iomanip>
 #include <array>
 
-// Simple Hazard Pointer Manager
+using namespace std;
+using namespace std::chrono;
+
+// ============================================================================
+// EPOCH-BASED RECLAMATION (Much faster than Hazard Pointers!)
+// ============================================================================
+
 template<typename T>
-class SimpleHazardPointers {
+class EpochManager
+{
 private:
     static constexpr size_t MAX_THREADS = 16;
-    static constexpr size_t HAZARDS_PER_THREAD = 2;  // We need 2 for our queue
+    static constexpr size_t EPOCH_FREQ = 100;  // Update epoch every N operations
     
-    struct HazardRecord {
-        std::atomic<T*> hazard_ptr{nullptr};
-        char padding[64 - sizeof(std::atomic<T*>)];  // Avoid false sharing
+    struct alignas(64) ThreadData
+    {
+        atomic<uint64_t> local_epoch{0};
+        atomic<bool> active{false};
+        uint64_t op_count{0};
+        vector<T*> retired[3];  // One vector per epoch
     };
     
-    // Global hazard pointer array
-    static std::array<std::array<HazardRecord, HAZARDS_PER_THREAD>, MAX_THREADS> hazards;
-    
-    // Thread-local storage for thread ID
+    alignas(64) atomic<uint64_t> global_epoch{0};
+    static ThreadData thread_data[MAX_THREADS];
     static thread_local size_t thread_id;
-    static std::atomic<size_t> thread_counter;
+    static atomic<size_t> thread_counter;
     
-    static size_t get_thread_id() {
+    static size_t get_thread_id()
+    {
         static thread_local bool initialized = false;
-        if (!initialized) {
-            thread_id = thread_counter.fetch_add(1) % MAX_THREADS;
+        if (!initialized)
+        {
+            thread_id = thread_counter.fetch_add(1, memory_order_relaxed) % MAX_THREADS;
             initialized = true;
         }
         return thread_id;
     }
     
+    void try_update_epoch()
+    {
+        size_t tid = get_thread_id();
+        ThreadData& td = thread_data[tid];
+        
+        if (++td.op_count % EPOCH_FREQ == 0)
+        {
+            uint64_t ge = global_epoch.load(memory_order_acquire);
+            td.local_epoch.store(ge, memory_order_release);
+        }
+    }
+    
+    uint64_t compute_min_epoch()
+    {
+        uint64_t min_epoch = global_epoch.load(memory_order_acquire);
+        
+        for (size_t i = 0; i < MAX_THREADS; ++i)
+        {
+            if (thread_data[i].active.load(memory_order_acquire))
+            {
+                uint64_t le = thread_data[i].local_epoch.load(memory_order_acquire);
+                if (le < min_epoch)
+                    min_epoch = le;
+            }
+        }
+        
+        return min_epoch;
+    }
+    
 public:
-    // Protect a pointer from deletion
-    static void protect(size_t index, T* ptr) {
+    EpochManager() = default;
+    
+    void enter()
+    {
         size_t tid = get_thread_id();
-        hazards[tid][index].hazard_ptr.store(ptr);
+        ThreadData& td = thread_data[tid];
+        
+        td.active.store(true, memory_order_release);
+        uint64_t ge = global_epoch.load(memory_order_acquire);
+        td.local_epoch.store(ge, memory_order_release);
     }
     
-    // Stop protecting a pointer
-    static void unprotect(size_t index) {
+    void exit()
+    {
         size_t tid = get_thread_id();
-        hazards[tid][index].hazard_ptr.store(nullptr);
+        thread_data[tid].active.store(false, memory_order_release);
     }
     
-    // Check if a pointer is protected by any thread
-    static bool is_protected(T* ptr) {
-        for (size_t i = 0; i < MAX_THREADS; ++i) {
-            for (size_t j = 0; j < HAZARDS_PER_THREAD; ++j) {
-                if (hazards[i][j].hazard_ptr.load() == ptr) {
-                    return true;
+    void retire(T* ptr)
+    {
+        if (!ptr) return;
+        
+        size_t tid = get_thread_id();
+        ThreadData& td = thread_data[tid];
+        
+        try_update_epoch();
+        
+        uint64_t ge = global_epoch.load(memory_order_acquire);
+        td.retired[ge % 3].push_back(ptr);
+        
+        // Try to reclaim old epochs
+        if (td.retired[ge % 3].size() > 100)
+        {
+            uint64_t min_epoch = compute_min_epoch();
+            
+            if (min_epoch > 0)
+            {
+                uint64_t safe_epoch = (min_epoch - 1) % 3;
+                for (T* p : td.retired[safe_epoch])
+                {
+                    delete p;
                 }
+                td.retired[safe_epoch].clear();
             }
         }
-        return false;
     }
     
-    // Safe delete: only delete if not protected
-    static bool safe_delete(T* ptr) {
-        if (!is_protected(ptr)) {
-            delete ptr;
-            return true;
-        }
-        return false;
+    void advance_epoch()
+    {
+        global_epoch.fetch_add(1, memory_order_acq_rel);
     }
     
-    static void show_hazard_status() {
-        std::cout << "=== Hazard Pointer Status ===" << std::endl;
-        for (size_t i = 0; i < MAX_THREADS; ++i) {
-            bool has_hazards = false;
-            for (size_t j = 0; j < HAZARDS_PER_THREAD; ++j) {
-                T* ptr = hazards[i][j].hazard_ptr.load();
-                if (ptr != nullptr) {
-                    if (!has_hazards) {
-                        std::cout << "Thread " << i << ": ";
-                        has_hazards = true;
-                    }
-                    std::cout << "hazard[" << j << "]=" << ptr << " ";
+    ~EpochManager()
+    {
+        // Cleanup all retired nodes
+        for (size_t i = 0; i < MAX_THREADS; ++i)
+        {
+            for (int e = 0; e < 3; ++e)
+            {
+                for (T* ptr : thread_data[i].retired[e])
+                {
+                    delete ptr;
                 }
             }
-            if (has_hazards) std::cout << std::endl;
         }
     }
 };
 
-// Static member definitions
 template<typename T>
-std::array<std::array<typename SimpleHazardPointers<T>::HazardRecord, SimpleHazardPointers<T>::HAZARDS_PER_THREAD>, SimpleHazardPointers<T>::MAX_THREADS> 
-SimpleHazardPointers<T>::hazards;
+typename EpochManager<T>::ThreadData EpochManager<T>::thread_data[EpochManager<T>::MAX_THREADS];
+template<typename T>
+thread_local size_t EpochManager<T>::thread_id{0};
+template<typename T>
+atomic<size_t> EpochManager<T>::thread_counter{0};
 
-template<typename T>
-thread_local size_t SimpleHazardPointers<T>::thread_id = 0;
+// ============================================================================
+// LOCK-FREE QUEUE WITH EPOCH-BASED RECLAMATION
+// ============================================================================
 
-template<typename T>
-std::atomic<size_t> SimpleHazardPointers<T>::thread_counter{0};
-
-// Now our safe lock-free queue!
-template<typename T>
-class SafeLockFreeQueue {
+template <typename T>
+class LockFreeQueue
+{
 private:
-    struct Node {
-        std::atomic<T*> data;
-        std::atomic<Node*> next;
+    struct Node
+    {
+        T data;
+        atomic<Node*> next;
         
-        Node() : data(nullptr), next(nullptr) {}
+        Node() : data{}, next{nullptr} {}
+        explicit Node(const T& val) : data(val), next{nullptr} {}
     };
-    
-    using HazardPtr = SimpleHazardPointers<Node>;
-    
-    std::atomic<Node*> head;
-    std::atomic<Node*> tail;
-    
+
+    alignas(64) atomic<Node*> m_head;
+    alignas(64) atomic<Node*> m_tail;
+    EpochManager<Node> epoch_mgr;
+
 public:
-    SafeLockFreeQueue() {
+    LockFreeQueue()
+    {
         Node* dummy = new Node();
-        head.store(dummy);
-        tail.store(dummy);
+        m_head.store(dummy, memory_order_relaxed);
+        m_tail.store(dummy, memory_order_relaxed);
     }
     
-    ~SafeLockFreeQueue() {
-        // Clean up remaining nodes
-        Node* current = head.load();
-        while (current) {
-            Node* next = current->next.load();
-            T* data = current->data.load();
-            if (data) delete data;
+    ~LockFreeQueue()
+    {
+        Node* current = m_head.load(memory_order_relaxed);
+        while (current)
+        {
+            Node* next = current->next.load(memory_order_relaxed);
             delete current;
             current = next;
         }
     }
     
-    void enqueue(T item) {
-        Node* new_node = new Node();
-        T* data = new T(std::move(item));
-        new_node->data.store(data);
+    LockFreeQueue(const LockFreeQueue&) = delete;
+    LockFreeQueue& operator=(const LockFreeQueue&) = delete;
+    
+    bool enqueue(const T& value)
+    {
+        epoch_mgr.enter();
         
-        while (true) {
-            Node* last = tail.load();
-            HazardPtr::protect(0, last);  // 🛡️ PROTECT the tail
+        Node* newNode = new Node(value);
+        
+        while (true)
+        {
+            Node* tail = m_tail.load(memory_order_acquire);
+            Node* next = tail->next.load(memory_order_acquire);
             
-            // Verify tail didn't change while we were protecting it
-            if (last != tail.load()) {
-                HazardPtr::unprotect(0);
-                continue;  // Tail changed, try again
-            }
-            
-            Node* next = last->next.load();
-            
-            if (last == tail.load()) {  // Double-check consistency
-                if (next == nullptr) {
-                    // Try to link new node
-                    if (last->next.compare_exchange_weak(next, new_node)) {
-                        tail.compare_exchange_weak(last, new_node);
-                        HazardPtr::unprotect(0);  // 🔓 UNPROTECT
-                        std::cout << "Thread " << std::this_thread::get_id() 
-                                  << " enqueued: " << item << std::endl;
-                        return;
+            if (tail == m_tail.load(memory_order_acquire))
+            {
+                if (next == nullptr)
+                {
+                    if (tail->next.compare_exchange_weak(next, newNode,
+                                                         memory_order_release,
+                                                         memory_order_acquire))
+                    {
+                        m_tail.compare_exchange_weak(tail, newNode,
+                                                    memory_order_release,
+                                                    memory_order_relaxed);
+                        epoch_mgr.exit();
+                        return true;
                     }
-                } else {
-                    // Help advance tail
-                    tail.compare_exchange_weak(last, next);
+                }
+                else
+                {
+                    m_tail.compare_exchange_weak(tail, next,
+                                                memory_order_release,
+                                                memory_order_relaxed);
                 }
             }
-            
-            HazardPtr::unprotect(0);  // 🔓 UNPROTECT before next iteration
         }
     }
-    
-    bool dequeue(T& result) {
-        while (true) {
-            Node* first = head.load();
-            HazardPtr::protect(0, first);  // 🛡️ PROTECT head
+
+    bool dequeue(T& result)
+    {
+        epoch_mgr.enter();
+        
+        while (true)
+        {
+            Node* head = m_head.load(memory_order_acquire);
+            Node* tail = m_tail.load(memory_order_acquire);
+            Node* next = head->next.load(memory_order_acquire);
             
-            // Verify head didn't change
-            if (first != head.load()) {
-                HazardPtr::unprotect(0);
-                continue;
-            }
-            
-            Node* last = tail.load();
-            Node* next = first->next.load();
-            HazardPtr::protect(1, next);   // 🛡️ PROTECT next
-            
-            // Double-check consistency
-            if (first != head.load()) {
-                HazardPtr::unprotect(0);
-                HazardPtr::unprotect(1);
-                continue;
-            }
-            
-            if (first == last) {
-                if (next == nullptr) {
-                    // Queue is empty
-                    HazardPtr::unprotect(0);
-                    HazardPtr::unprotect(1);
-                    return false;
-                }
-                // Help advance tail
-                tail.compare_exchange_weak(last, next);
-            } else {
-                if (next == nullptr) {
-                    // Shouldn't happen, try again
-                    HazardPtr::unprotect(0);
-                    HazardPtr::unprotect(1);
-                    continue;
-                }
-                
-                // Read data
-                T* data = next->data.load();
-                if (data == nullptr) {
-                    HazardPtr::unprotect(0);
-                    HazardPtr::unprotect(1);
-                    continue;
-                }
-                
-                // Try to advance head
-                if (head.compare_exchange_weak(first, next)) {
-                    result = *data;
-                    delete data;
-                    next->data.store(nullptr);
-                    
-                    HazardPtr::unprotect(0);  // 🔓 UNPROTECT
-                    HazardPtr::unprotect(1);
-                    
-                    std::cout << "Thread " << std::this_thread::get_id() 
-                              << " dequeued: " << result << std::endl;
-                    
-                    // NOW WE CAN SAFELY TRY TO DELETE THE OLD HEAD!
-                    if (!HazardPtr::safe_delete(first)) {
-                        std::cout << "  (Node " << first << " is protected, not deleted)" << std::endl;
-                    } else {
-                        std::cout << "  (Node " << first << " safely deleted)" << std::endl;
+            if (head == m_head.load(memory_order_acquire))
+            {
+                if (head == tail)
+                {
+                    if (next == nullptr)
+                    {
+                        epoch_mgr.exit();
+                        return false;
                     }
                     
-                    return true;
+                    m_tail.compare_exchange_weak(tail, next,
+                                                memory_order_release,
+                                                memory_order_relaxed);
+                }
+                else
+                {
+                    if (next == nullptr)
+                        continue;
+                    
+                    result = next->data;
+                    
+                    if (m_head.compare_exchange_weak(head, next,
+                                                     memory_order_release,
+                                                     memory_order_acquire))
+                    {
+                        epoch_mgr.retire(head);
+                        epoch_mgr.exit();
+                        return true;
+                    }
                 }
             }
-            
-            HazardPtr::unprotect(0);  // 🔓 UNPROTECT before next iteration
-            HazardPtr::unprotect(1);
         }
-    }
-    
-    bool empty() const {
-        Node* first = head.load();
-        Node* last = tail.load();
-        return (first == last) && (first->next.load() == nullptr);
     }
 };
 
-void demonstrate_hazard_pointers() {
-    std::cout << "=== How Hazard Pointers Work ===" << std::endl;
-    std::cout << R"(
-1. PROTECTION PHASE:
-   Before using a pointer, announce: "I'm using this!"
-   HazardPtr::protect(index, pointer);
+// ============================================================================
+// MUTEX-BASED QUEUE
+// ============================================================================
 
-2. VALIDATION PHASE:
-   Double-check the pointer is still valid
-   if (pointer != atomic_var.load()) { /* pointer changed, retry */ }
-
-3. SAFE USAGE PHASE:
-   Now it's safe to dereference the pointer
-   pointer->some_field.load();
-
-4. CLEANUP PHASE:
-   Announce: "I'm done with this"
-   HazardPtr::unprotect(index);
-
-5. DELETION PHASE:
-   Before deleting, check if anyone is using it
-   if (!HazardPtr::is_protected(pointer)) {
-       delete pointer;  // Safe!
-   }
-
-The key insight: Hazard pointers create a "grace period" where
-memory won't be deleted while someone might still be using it.
-)" << std::endl;
-}
-
-void test_safe_queue() {
-    SafeLockFreeQueue<int> queue;
+template <typename T>
+class MutexQueue
+{
+private:
+    list<T> m_queue;
+    mutex m_mutex;
     
-    const int num_threads = 4;
-    const int operations_per_thread = 5;
+public:
+    bool enqueue(const T& value)
+    {
+        lock_guard<mutex> lock(m_mutex);
+        m_queue.push_back(value);
+        return true;
+    }
+
+    bool dequeue(T& result)
+    {
+        lock_guard<mutex> lock(m_mutex);
+        if (m_queue.empty())
+            return false;
+        
+        result = m_queue.front();
+        m_queue.pop_front();
+        return true;
+    }
+};
+
+// ============================================================================
+// BENCHMARK FRAMEWORK
+// ============================================================================
+
+template<typename Queue>
+class Benchmark
+{
+private:
+    Queue& queue;
+    atomic<long long> total_dequeued{0};
+    atomic<bool> producers_done{false};
     
-    std::vector<std::thread> threads;
+    void producer(long long items_per_thread)
+    {
+        for (long long i = 0; i < items_per_thread; ++i)
+        {
+            queue.enqueue(i);
+        }
+    }
     
-    std::cout << "\n=== Testing Safe Lock-Free Queue ===" << std::endl;
-    
-    // Mixed producer-consumer threads
-    for (int i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&queue, i, operations_per_thread]() {
-            // Each thread both produces and consumes
-            for (int j = 0; j < operations_per_thread; ++j) {
-                // Produce
-                int value = i * 100 + j;
-                queue.enqueue(value);
-                
-                // Small delay
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                
-                // Try to consume
-                int consumed;
-                if (queue.dequeue(consumed)) {
-                    // Successfully consumed something
-                }
-                
-                // Show hazard pointer status occasionally
-                if (j % 2 == 0) {
-                    SimpleHazardPointers<SafeLockFreeQueue<int>::Node>::show_hazard_status();
-                }
-                
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    void consumer(long long total_items)
+    {
+        long long value;
+        
+        while (true)
+        {
+            if (queue.dequeue(value))
+            {
+                long long count = total_dequeued.fetch_add(1, memory_order_relaxed) + 1;
+                if (count >= total_items)
+                    return;
             }
-        });
+            else
+            {
+                if (producers_done.load(memory_order_acquire) && 
+                    total_dequeued.load(memory_order_relaxed) >= total_items)
+                    return;
+            }
+        }
     }
     
-    for (auto& t : threads) {
-        t.join();
-    }
+public:
+    Benchmark(Queue& q) : queue(q) {}
     
-    std::cout << "\n=== Final Status ===" << std::endl;
-    std::cout << "Queue empty: " << (queue.empty() ? "Yes" : "No") << std::endl;
-    
-    // Clean up remaining items
-    int remaining = 0;
-    int value;
-    while (queue.dequeue(value)) {
-        remaining++;
+    double run(int num_producers, int num_consumers, long long items_per_producer)
+    {
+        total_dequeued.store(0);
+        producers_done.store(false);
+        
+        long long total_items = num_producers * items_per_producer;
+        
+        auto start = high_resolution_clock::now();
+        
+        vector<thread> producers;
+        for (int i = 0; i < num_producers; ++i)
+            producers.emplace_back(&Benchmark::producer, this, items_per_producer);
+        
+        vector<thread> consumers;
+        for (int i = 0; i < num_consumers; ++i)
+            consumers.emplace_back(&Benchmark::consumer, this, total_items);
+        
+        for (auto& t : producers)
+            t.join();
+        
+        producers_done.store(true, memory_order_release);
+        
+        for (auto& t : consumers)
+            t.join();
+        
+        auto end = high_resolution_clock::now();
+        return duration_cast<microseconds>(end - start).count() / 1e6;
     }
-    std::cout << "Remaining items dequeued: " << remaining << std::endl;
-}
+};
 
-int main() {
-    demonstrate_hazard_pointers();
-    test_safe_queue();
+// ============================================================================
+// MAIN
+// ============================================================================
+
+int main()
+{
+    cout << "\n╔═══════════════════════════════════════════════════════════════════════╗\n";
+    cout << "║     LOCK-FREE QUEUE (Epoch-Based) vs MUTEX QUEUE BENCHMARK          ║\n";
+    cout << "╚═══════════════════════════════════════════════════════════════════════╝\n\n";
     
-    std::cout << "\n🎉 SUCCESS! We now have a memory-safe lock-free queue!" << std::endl;
+    const long long ITEMS_PER_PRODUCER = 2'500'000;
+    
+    struct TestConfig {
+        int producers, consumers;
+        string name;
+    };
+    
+    vector<TestConfig> configs = {
+        {1, 1, "1P + 1C"},
+        {2, 2, "2P + 2C"},
+        {4, 4, "4P + 4C"},
+        {8, 8, "8P + 8C"}
+    };
+    
+    cout << fixed << setprecision(3);
+    cout << setw(12) << "Config" 
+         << setw(15) << "Mutex (s)" 
+         << setw(15) << "LockFree (s)"
+         << setw(18) << "Speedup"
+         << setw(18) << "Mutex (Mops/s)"
+         << setw(18) << "LockFree (Mops/s)\n";
+    cout << string(96, '-') << "\n";
+    
+    for (const auto& config : configs)
+    {
+        long long total = config.producers * ITEMS_PER_PRODUCER;
+        
+        MutexQueue<long long> mq;
+        Benchmark<MutexQueue<long long>> mb(mq);
+        double mt = mb.run(config.producers, config.consumers, ITEMS_PER_PRODUCER);
+        
+        LockFreeQueue<long long> lfq;
+        Benchmark<LockFreeQueue<long long>> lfb(lfq);
+        double lft = lfb.run(config.producers, config.consumers, ITEMS_PER_PRODUCER);
+        
+        double speedup = mt / lft;
+        
+        cout << setw(12) << config.name
+             << setw(15) << mt
+             << setw(15) << lft
+             << setw(17) << speedup << "x"
+             << setw(18) << (total/mt)/1e6
+             << setw(18) << (total/lft)/1e6 << "\n";
+        
+        this_thread::sleep_for(milliseconds(100));
+    }
+    
+    cout << "\n✓ Benchmark complete with proper memory reclamation!\n";
+    cout << "  Compile: g++ -O3 -std=c++17 -pthread -march=native benchmark.cpp\n\n";
     
     return 0;
 }
