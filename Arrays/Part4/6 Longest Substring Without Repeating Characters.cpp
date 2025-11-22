@@ -1,6 +1,7 @@
 // LeetCode = https://leetcode.com/problems/longest-substring-without-repeating-characters/description/
 // Self using normal approach
-
+#include <bits/stdc++.h>
+using namespace std;
 
 /*#########-------------Normal Approach--------------########*/
 class Solution {

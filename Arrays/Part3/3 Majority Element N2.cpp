@@ -1,6 +1,7 @@
 // LeetCode link = https://leetcode.com/problems/majority-element/description/
 // Self
-
+#include <bits/stdc++.h>
+using namespace std;
 
 /*
 SC = O(1)

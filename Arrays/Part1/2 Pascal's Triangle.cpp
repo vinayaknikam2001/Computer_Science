@@ -5,6 +5,7 @@
 using namespace std;
 using lli = long long int;
 long long int mod=1e9+7;
+typedef long long int lli;
 
 
 /*

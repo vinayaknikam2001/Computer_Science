@@ -11,6 +11,8 @@ SC = O(1)
 TC = O(N)
 */
 #include <bits/stdc++.h> 
+using namespace std;
+
 long long maxSubarraySum(int arr[], int n)
 {
     long long int crntSum = 0, mxSum = 0, maxi=0;

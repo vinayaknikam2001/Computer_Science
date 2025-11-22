@@ -1,7 +1,8 @@
 // Coding Ninjas = https://www.codingninjas.com/studio/problems/subarrays-with-xor-k_6826258?utm_source=striver&utm_medium=website&utm_campaign=a_zcoursetuf&leftPanelTab=0
 // Self using Normal approach (Not Accepted remained TLE on codingninjas)
 // Referenced using optimal approach
-
+#include <bits/stdc++.h>
+using namespace std;
 
 /*#############---------Normal Approach-----------#############*/
 

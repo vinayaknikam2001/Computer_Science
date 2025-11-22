@@ -1,40 +1,50 @@
 #include <bits/stdc++.h>
 using namespace std;
+typedef long long int lli;
+typedef unsigned long long ull;
 
-class Solution {
-public:
 
-    int JK(vector<int>& nums, int i, int iTarget)
+    lli calculateForLast(lli num)
     {
-        if (i == iTarget)
-        {
-            return 0;
-        }
-        int iJmp = nums[i] + i;
-        if (iJmp >= iTarget)
-        {
-            return 1;
-        }
-        int iMinJmp = 1e5;
-        for (int j=i+1; j<=iJmp; ++j)
-        {
-            int Crnt = 1 + JK(nums, j, iTarget);
-            iMinJmp = min(Crnt, iMinJmp);
-        }
-        return iMinJmp;
+        lli numC = num;
     }
 
-    int jump(vector<int>& nums)
+    lli numWithoutZeroes(lli n)
     {
-        return JK(nums, 0, nums.size()-1);
+
+        lli iRes = 0, iDigit = 0;
+        lli num = n;
+        bool bIsMedZero = false;
+
+        iDigit = ((n/10) > 0) ? 9 : n%10;
+        if ((n/10) <= 0) iRes += iDigit;
+        while ((n/10) > 0)
+        {
+            // lli iDigit = n%10;
+            // if (0 != iDigit) 
+            // {
+            //     iRes = (iDigit * iDecCnt) + iRes;
+            //     iDecCnt *=  10;
+            // }
+            if (num != n)
+            {
+                bIsMedZero = (n%10 == 0); 
+            }
+            iRes = (iDigit) + iRes;
+            n /= 10;
+            iDigit *= 9;
+        }
+
+        iRes = (bIsMedZero) ? iRes : (iRes + calculateForLast(num));
+
+        return iRes;
     }
-};
-
-
-int main () 
+    
+int main()
 {
-    vector<int> v = {2,3,1,1,4};
-    Solution s;
-    cout << s.jump(v);
+    
+
+    cout << numWithoutZeroes(450);
+    
     return 0;
 }

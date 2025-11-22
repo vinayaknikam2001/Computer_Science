@@ -1,6 +1,7 @@
 // LeetCode Link = https://leetcode.com/problems/search-a-2d-matrix/submissions/
 // Self Sovled
-
+#include <bits/stdc++.h>
+using namespace std;
 /*
 SC = O(1)
 TC = 1) We are traversing matrix in binary search becuase at each step there is division by 2 

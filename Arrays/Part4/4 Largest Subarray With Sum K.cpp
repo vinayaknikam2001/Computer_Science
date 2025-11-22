@@ -1,6 +1,7 @@
 // Coding Ninjas = https://www.codingninjas.com/studio/problems/920321?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website&leftPanelTab=0
 // Self Solved using normal approach
-
+#include <bits/stdc++.h>
+using namespace std;
 
 // There is one more approach not mentioned here which is most optimistic using 2 pointer approach.....:->)
 

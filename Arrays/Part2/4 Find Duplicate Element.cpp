@@ -1,7 +1,8 @@
 // LeetCode = https://leetcode.com/problems/find-the-duplicate-number/submissions/
 // Normal using hashing could be solved..
 // Referenced using floyd warshall's algorithm (Hare & Tortoise)
-
+#include <bits/stdc++.h>
+using namespace std;
 
 /*
 Here can not use calculation method cause they said element can be repeated n number times
@@ -25,7 +26,7 @@ int findDuplicate(vector<int>& nums)
     {
         iSlow = nums[iSlow];
         iFast = nums[nums[iFast]];
-    } while(iSlow != iFast)
+    } while(iSlow != iFast);
 
     iFast = 0;
     while (iSlow != iFast)

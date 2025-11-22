@@ -1,6 +1,7 @@
 // LeetCode = https://leetcode.com/problems/merge-intervals/
 // Referenced
-
+#include <bits/stdc++.h>
+using namespace std;
 /*
 Read This First to Understand constrains========================================================================>
 Some corner cases

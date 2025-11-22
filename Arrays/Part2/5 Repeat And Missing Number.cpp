@@ -1,6 +1,7 @@
 // CodingNinjas = https://www.codingninjas.com/studio/problems/873366?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website&leftPanelTab=1
 // Referenced
 #include <bits/stdc++.h>
+using namespace std;
 typedef long long int lli;
 typedef unsigned long long ull;
 

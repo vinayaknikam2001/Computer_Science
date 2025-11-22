@@ -2,7 +2,7 @@
 //Self Solved 
 //Best Optimised
 #include <bits/stdc++.h> 
-
+using namespace std;
 
 /*
 SC = O(1)

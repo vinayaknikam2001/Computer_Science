@@ -2,6 +2,7 @@
 //Self Solved
 //Using normal approach
 #include <bits/stdc++.h>
+using namespace std;
 
 /*
 SC = O(1)

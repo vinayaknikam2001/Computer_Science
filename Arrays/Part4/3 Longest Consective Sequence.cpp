@@ -1,6 +1,7 @@
 // LeetCode = https://leetcode.com/problems/longest-consecutive-sequence/description/
 // Self = Better Solution
-
+#include <bits/stdc++.h>
+using namespace std;
 
 class Solution {
 public:

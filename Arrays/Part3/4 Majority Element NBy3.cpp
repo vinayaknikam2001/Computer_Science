@@ -1,6 +1,7 @@
 // LeetCode = https://leetcode.com/problems/majority-element-ii/description/
 // Referenced 
-
+#include <bits/stdc++.h>
+using namespace std;
 #define MOD -1e7+1
 
 class Solution {

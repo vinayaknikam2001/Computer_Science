@@ -1,12 +1,12 @@
 //https://www.codingninjas.com/codestudio/problems/893046?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website&leftPanelTab=1
 //Referenced
 #include <bits/stdc++.h> 
-
+using namespace std;
 
 /*
 SC = O(1)
 TC = 1) To Find Peak Element From Last = O(N)
-     2) To find just next element from peak = O(N)
+     2) To find just next big element from peak = O(N)
      3) To reverse entire thing = O(N)
      = O(N)
 */
@@ -52,4 +52,4 @@ vector<int> nextPermutation(vector<int> &permutation, int n)
 
 
 //Inbuilt C++ Method For this one
-next_permutation(permutation.begin(), permutation.end());
+//next_permutation(permutation.begin(), permutation.end());

@@ -1,6 +1,7 @@
 // LeetCode = https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/#google_vignette
 // Self
-
+#include <bits/stdc++.h>
+using namespace std;
 
 class Solution {
 public:

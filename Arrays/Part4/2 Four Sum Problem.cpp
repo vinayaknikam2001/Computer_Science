@@ -1,5 +1,7 @@
 // LeetCode = https://leetcode.com/problems/4sum/description/
 // Partiall
+#include <bits/stdc++.h>
+using namespace std;
 // Test Cases 
 /*
 1> [-2, -1, 0, 0, 1, 2]
