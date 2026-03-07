@@ -6,6 +6,8 @@
 	{3, 2, -2}; {3, 2, -2, -3}; {2, 3, -5, 3, 5};
 */
 #include <bits/stdc++.h> 
+using namespace std;
+
 int maximumProduct(vector<int> &arr, int n)
 {
 	int ans = arr[0], maxProd = arr[0], minProd = arr[0];

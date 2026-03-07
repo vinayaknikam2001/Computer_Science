@@ -1,8 +1,11 @@
-//https://www.codingninjas.com/codestudio/problems/630459?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website
+//https://leetcode.com/problems/longest-increasing-subsequence/description/
 //Referenced
 /*
 	As DP will be generated for a respective [idx] and [prev];
 	and prev can be -ve so we are storing in +1 format in DP.
+    Why we need 2D DP array previous is needed cause we decide.
+    Based on previous wheather to consider current element as part of our subsequence or not.
+    try focus on practical case storing in DP when return when iPrev is not there
 */
 #include <bits/stdc++.h>
 using namespace std;

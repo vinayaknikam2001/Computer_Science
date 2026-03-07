@@ -1,4 +1,7 @@
 //Self Solved 
+// Self 
+#include <bits/stdc++.h>
+using namespace std;
 /*
 Remeber...
 Corner Case

@@ -3,6 +3,7 @@
 
 //Instead of using set we can also use simple array to maintain the count.
 #include <bits/stdc++.h>
+using namespace std;
 
 /*
 SC = O(N+M)

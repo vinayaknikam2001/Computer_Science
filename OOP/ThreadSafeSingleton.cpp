@@ -1,9 +1,6 @@
-#include <bits/stdc++.h>
 #include "ThreadSafeSingleton.h"
-using namespace std;
 typedef long long int lli;
 typedef unsigned long long ull;
-
 
 Singleton* Singleton::getInstance()
 {
@@ -21,30 +18,30 @@ Singleton* Singleton::getInstance()
 }
 
 
-//This is also an example of thread safe singleton design pattern. IF compiler version in C++11 and later.
-class Singleton
-{
-private:
+// //This is also an example of thread safe singleton design pattern. IF compiler version in C++11 and later.
+// class Singleton
+// {
+// private:
 
-    Singleton(){}
-    ~Singleton(){}
-public:
-    Singleton(const Singleton &objSingleton) = delete;
-    Singleton operator=(const Singleton &objSingleton) = delete;
+//     Singleton(){}
+//     ~Singleton(){}
+// public:
+//     Singleton(const Singleton &objSingleton) = delete;
+//     Singleton operator=(const Singleton &objSingleton) = delete;
 
-    static Singleton& getInstance() 
-    {
-        static Singleton objSingleton;//In C++ 11 and later local static variable creation is thread safe.
-        return objSingleton;
-    }
+//     static Singleton& getInstance() 
+//     {
+//         static Singleton objSingleton;//In C++ 11 and later local static variable creation is thread safe.
+//         return objSingleton;
+//     }
 
-};
+// };
     
 int main()
 {
     Singleton *pObj = Singleton::getInstance();
-    Singleton* pObj2 = Singleton::getInstance();
+    Singleton *pObj2 = Singleton::getInstance();
 
-    cout<<"Obj1="<<&pObj<<" Obj2="<<&pObj2<<" EXIT";
+    cout<<"Obj1="<<pObj<<" Obj2="<<pObj2<<" EXIT";
     return 0;
 }

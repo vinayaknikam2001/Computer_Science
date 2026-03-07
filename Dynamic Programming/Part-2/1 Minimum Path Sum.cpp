@@ -1,6 +1,8 @@
 // https://www.codingninjas.com/codestudio/problems/minimum-path-sum_985349?topList=striver-sde-sheet-problems&utm_source=striver&utm_medium=website&leftPanelTab=0
+// https://leetcode.com/problems/minimum-path-sum/description/
 // Self Solved
 #include <bits/stdc++.h>
+using namespace std;
 typedef unsigned long long ull;
 
 ull calcMin(vector<vector<int>> &grid, int i, int j, vector<vector<ull>> &dp)

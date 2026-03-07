@@ -1,5 +1,7 @@
 //LeetCode = https://leetcode.com/problems/valid-anagram/
 //Self
+#include <bits/stdc++.h>
+using namespace std;
 
 class Solution {
 public:

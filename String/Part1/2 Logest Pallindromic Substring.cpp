@@ -1,5 +1,7 @@
 // Leet Code = https://leetcode.com/problems/longest-palindromic-substring/description/
 // Referenced
+#include <bits/stdc++.h>
+using namespace std;
 
 
 /*---------------------- Brute Forced Soluton ----------------------*/

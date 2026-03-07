@@ -1,6 +1,8 @@
 //LeetCode = https://leetcode.com/problems/string-to-integer-atoi/
 //Self
 //Problem includes lot of corner cases
+#include <bits/stdc++.h>
+using namespace std;
 
 #define MIN_INT_32 -2147483648
 #define MAX_INT_32 2147483648-1

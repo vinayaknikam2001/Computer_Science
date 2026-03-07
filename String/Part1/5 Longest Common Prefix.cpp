@@ -1,5 +1,7 @@
 //LeetCode = https://leetcode.com/problems/longest-common-prefix/description/
 //Self
+#include <bits/stdc++.h>
+using namespace std;
 
 /*
 Time Complexity: O(S)

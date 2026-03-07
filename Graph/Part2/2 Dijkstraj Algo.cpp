@@ -1,48 +1,47 @@
 // LeetCode Link = https://leetcode.com/problems/network-delay-time/submissions/
-// Self
+#include <bits/stdc++.h>
+using namespace std;
 
-int networkDelayTime(vector<vector<int>>& times, int n, int k) 
+class Solution {
+
+public:
+    int networkDelayTime(vector<vector<int>>& times, int n, int k) 
     {
-        vector<vector<pair<int, int>>> gList(n+1);
-        for(auto v:times){
-            gList[v[0]].push_back({v[1], v[2]});
-        }
-        
-        //Greater<> always creates a min Heap & less max-heap 
-        priority_queue<pair<int, int>, vector<pair<int, int>> , greater<pair<int, int>>> q;
-        vector<int> dist(n+1, iMax);
-        
-        q.push({0, k});
-        dist[k] = 0;
-        
-        while(!q.empty())
+        //Constructing graph [s]
+        vector<vector<pair<int, int>>> gGraph(n+1);
+        for (auto &vEdge:times)
         {
-            auto vertexPair = q.top();
-            int vertexDist = vertexPair.first;
-            int vertex = vertexPair.second;
-            
-            q.pop();
-            
-            for(auto &nodePair:gList[vertex])
+            int iSrc = vEdge[0], iDest = vEdge[1], iWet = vEdge[2];
+            gGraph[iSrc].push_back({iDest ,iWet});
+        }
+        //Constructing graph [e]
+
+        vector<int> vDist(n+1, INT_MAX);
+        //Below greater<> creates a MinHeap & less<> MaxHeap
+        priority_queue<pair<int, int>, vector<pair<int,int>>, greater<pair<int, int>>> pQueue; 
+        pQueue.push({0, k});
+        vDist[k] = 0;
+
+        while (!pQueue.empty())
+        {
+            auto node = pQueue.top();
+            pQueue.pop();
+
+            for (auto &adjNode: gGraph[node.second])
             {
-                int node = nodePair.first;
-                int nodeDist = nodePair.second;
-                
-                if((dist[vertex] + nodeDist) < dist[node]){
-                    dist[node] = dist[vertex] + nodeDist;
-                    q.push({dist[node], node});
-                }     
-/*The Idea behind this is to keep pushing inside Q until we find out smaller and smaller distances. If we find out smaller we’ll update all node belonging to that vertex */
+                int iNewDist = node.first + adjNode.second;
+                if (iNewDist < vDist[adjNode.first])
+                {
+                    vDist[adjNode.first] = iNewDist;
+                    pQueue.push({iNewDist, adjNode.first});
+                }
             }
         }
-        
-        int ans = 0;
-        for(int i=1; i<=n; i++){
-            if(dist[i] == iMax)
-                return -1;
-            ans = max(ans, dist[i]);
+        int iMax = INT_MIN;
+        for (int i=1; i < vDist.size(); ++i)
+        {
+            iMax = max(vDist[i] , iMax);
         }
-        
-        return ans;
-           
+        return (INT_MAX == iMax) ? -1 : iMax;
     }
+};

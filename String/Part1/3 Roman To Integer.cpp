@@ -1,5 +1,7 @@
 // LeetCode = https://leetcode.com/problems/roman-to-integer/
 // Self Solved
+#include <bits/stdc++.h>
+using namespace std;
 
 class Solution 
 {

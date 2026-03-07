@@ -80,6 +80,16 @@ class String
         swap(s1.pcStr, s2.pcStr);
    }
 
+   /*Writing operator overloading to concatenate to String class*/
+   String operator+(const String& s1)
+   {
+        String sRes;
+        sRes.iSize = this->iSize + s1.iSize;
+        sRes.pcStr = new char[sRes.iSize + 1];
+        snprintf(sRes.pcStr, sRes.iSize+1, "%s%s", this->pcStr, s1.pcStr);
+        return sRes;
+   }
+
 
     ~String()
     {
@@ -135,7 +145,9 @@ int main()
     str6  = str2;   //Copy assignment operator
     cout<<"Before copy assignment ops "<<str6<<endl;
 
-    cout<<"All "<<str2<<str3<<str7;
+    cout<<"All "<<str2<<str3<<str7 <<endl;
+
+    cout << (str2+str3) << endl;
     /*
     Remeber std::move assignment and constructor are diffrent;
     String s1 = std::move(s2); //This is move constructor..
