@@ -4,18 +4,11 @@ typedef long long int lli;
 typedef unsigned long long ull;
 
 /*
-0   1  2  3  4
-[ 1| 2| 3| 4| 5]
-Head = -1  = 0 
-Tail = 0   = 0
-
-No Insertion As Both Are Pointing To Zero
-Head = 0
-Tail = 0
-
-While Deleting when both point to same just reset them to because this means array is empty.
-Head = -1
-Tail = 0
+There is difference in above 3 Syntax.
+int *m_piArr = new int(10);   //Creates only one int element & assigns value 10 to it. 
+int *m_piArr = new int[10];   //Creates array of 10 elements & value in that could be anything.
+int *m_piArr = new int[10](); //Creates array of 10 elements & Sets all values to zero.
+                               but you can't pass parameter inside () gives compilation error.
 */
 
 template <typename T>
