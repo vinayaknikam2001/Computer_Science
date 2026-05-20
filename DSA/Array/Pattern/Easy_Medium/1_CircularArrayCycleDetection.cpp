@@ -1,7 +1,10 @@
-#include <bits/stdc++.h>
-using namespace std;
-typedef long long int lli;
-typedef unsigned long long ull;
+/*
+LeetCode 457 = https://leetcode.com/problems/circular-array-loop/
+Date = 19-May-2026
+TC = 
+SC = 
+*/
+
 
 class Solution 
 {
@@ -12,19 +15,13 @@ class Solution
         int iSize = nums.size();
         int iVal = nums[i];
         int idx = (i + nums[i]) % iSize;
-        idx = (idx < 0) ? iSize - idx : idx; 
+        idx = (idx < 0) ? iSize - abs(idx) : idx; 
         if (bSign != (iVal > 0) || idx == i)
         {
             idx = -1;
         }
         return idx;
     }
-    /*
-    s 1 2 3
-    f 2 4 6
-    0  1  2  3
-          -3
-    */
 
 
 public:
@@ -67,12 +64,3 @@ public:
         return false;
     }
 };
-    
-int main()
-{
-    Solution s;
-    vector<int> vec = {-1, -1, -1};
-    s.circularArrayLoop(vec);
-
-    return 0;
-}

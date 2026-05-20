@@ -1,6 +1,8 @@
 /*
 LeetCode 457 = https://leetcode.com/problems/circular-array-loop/
 Date = 19-May-2026
+TC = 
+SC = 
 Failed Test Cases:
 1) [-2,1,-1,-2,-2]  //For this testcase there was a cycle in 1st and 2nd index so which is in opposite directions
 2) [-1]             //For this test case -ve index was getting generated in getNextIndex Function.
