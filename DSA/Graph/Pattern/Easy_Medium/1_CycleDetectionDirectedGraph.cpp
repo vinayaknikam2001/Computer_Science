@@ -1,6 +1,8 @@
 /*
 LeetCode 457 = https://leetcode.com/problems/circular-array-loop/
 Date = 19-May-2026
+RevisedDate = NA
+Solution = Self
 TC = 
 SC = 
 Failed Test Cases:

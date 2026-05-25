@@ -1,8 +1,15 @@
 /*
 LeetCode 457 = https://leetcode.com/problems/circular-array-loop/
 Date = 19-May-2026
+RevisedDate = NA
+Solution = Referanced
 TC = 
 SC = 
+Failed Case:
+1) Many times faced runtime issue index out of bound acces.
+This was due to I was using output of nums.size() directly in getNextIndex().
+Now to avoid this I store it in int iSize variable. Since nums.size() returns
+size_t datatype it causes problem when used with int with -ve index.
 */
 
 
@@ -12,9 +19,9 @@ class Solution
 
     int getNextIndex(int i, vector<int>&nums, bool bSign)
     {
-        int iSize = nums.size();
+        int iSize = nums.size(); // Read Case 1 IMP case.
         int iVal = nums[i];
-        int idx = (i + nums[i]) % iSize;
+        int idx = (i + nums[i]) % iSize; // Read Case 1 IMP case.
         idx = (idx < 0) ? iSize - abs(idx) : idx; 
         if (bSign != (iVal > 0) || idx == i)
         {

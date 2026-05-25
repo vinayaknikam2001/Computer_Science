@@ -1,6 +1,8 @@
 /*
 LeetCode 239 = https://leetcode.com/problems/sliding-window-maximum/description/
 Date = 14-May-2026
+RevisedDate = NA
+Solution = Referanced
 TC = 
 SC = 
 */
