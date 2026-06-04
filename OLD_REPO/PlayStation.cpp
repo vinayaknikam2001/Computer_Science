@@ -14,6 +14,10 @@ int main()
 
 
 /*
+Corner Cases
+Needle   = "ssads"
+HeyStack =  "ssassads"
 
-
+Needle   = "sasadbc"
+HeyStack = "sasasadbc"
 */
