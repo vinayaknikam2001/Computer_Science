@@ -6,6 +6,8 @@ Solution = Referanced
 TC = 1) Brute = O(N^3)  2) Better = O(N^2)   3) Best = O (N) using manacher's algorithm
 SC = 
 */
+#include <bits/stdc++.h>
+using namespace std;
 
 
 /*---------------------- Brute Forced Soluton ----------------------*/

@@ -7,8 +7,6 @@ TC =
 SC = 
 // Took a lot time for this 42 Mins.
 */
-
-
 #include <bits/stdc++.h>
 using namespace std;
 
