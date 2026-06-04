@@ -1,78 +1,60 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long int lli;
-typedef unsigned long long ull;
-
+#define MIN_INT_32 -2147483648
+#define MAX_INT_32 2147483648-1
+#define DECIMAL 10
 class Solution 
 {
-    private:
-
-    int getNextIndex(int i, vector<int>&nums, bool bSign)
-    {
-        int iSize = nums.size();
-        int iVal = nums[i];
-        int idx = (i + nums[i]) % iSize;
-        idx = (idx < 0) ? iSize - idx : idx; 
-        if (bSign != (iVal > 0) || idx == i)
-        {
-            idx = -1;
-        }
-        return idx;
-    }
-    /*
-    s 1 2 3
-    f 2 4 6
-    0  1  2  3
-          -3
-    */
-
-
 public:
-    bool circularArrayLoop(vector<int>& nums) 
-    { 
-        vector<bool> bVisited(nums.size(), false);
-        int iFast = 0, iSlow = 0;
-        for (int i=0; i<nums.size(); ++i)
-        {
-            if (!bVisited[i])
-            {
-                iFast = iSlow = i;
-                bVisited[i] = true;
-                bool bSign = (nums[i] > 0);
-                while (true)
-                {
-                    bVisited[iSlow] = true;
-                    bVisited[iFast] = true;
-                    iFast = getNextIndex(iFast, nums, bSign);
-                    iSlow = getNextIndex(iSlow, nums, bSign);
-                    if (iFast == -1 || iSlow == -1)
-                    {
-                        break;
-                    }
-                    iFast = getNextIndex(iFast, nums, bSign);
-                    if (iFast == -1)
-                    {
-                        break;
-                    }
+    int myAtoi(string s) 
+    {
+        lli iNumber = 0;
+        bool bNoStart = false, bNegative = false;
+        short iCnt = 0;
 
-                    if (iFast == iSlow)
-                    {
-                        return true;
-                    }
-                }
-            }            
+        for (int i=0; i<s.size(); ++i)
+        {
+            if ((s[i] == ' ' || s[i] == '0') && !bNoStart)
+            {
+                bNoStart = (s[i] == '0');
+                continue;
+            }
+
+            if ((s[i] == '+' || s[i] == '-') && !bNoStart)
+            {
+                bNegative = (s[i] == '-');
+                bNoStart = true;
+                continue;
+            }
+
+            short iDigit = (s[i] - '0');
+            if (iDigit > 9 || iDigit < 0)
+            {
+                break;
+            }
+            cout << iCnt << endl;
+            if (iCnt > 11)
+            {
+                break;
+            }
+            iNumber = (iNumber * (lli)DECIMAL) + (lli)iDigit;
+            ++iCnt;
         }
 
+        iNumber = (bNegative) ? (-1 * iNumber) : iNumber;
+        cout << iNumber;
+        iNumber = max((lli)MIN_INT_32, iNumber);
+        iNumber = min((lli)MAX_INT_32, iNumber);
 
-        return false;
+        return iNumber;
     }
 };
-    
-int main()
+
+
+int main ()
 {
     Solution s;
-    vector<int> vec = {-1, -1, -1};
-    s.circularArrayLoop(vec);
-
+    s.myAtoi("21474836460");
     return 0;
 }

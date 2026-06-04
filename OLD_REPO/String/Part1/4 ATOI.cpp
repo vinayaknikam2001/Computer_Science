@@ -1,65 +1,60 @@
-//LeetCode = https://leetcode.com/problems/string-to-integer-atoi/
-//Self
-//Problem includes lot of corner cases
 #include <bits/stdc++.h>
 using namespace std;
-
+typedef long long int lli;
 #define MIN_INT_32 -2147483648
 #define MAX_INT_32 2147483648-1
-class Solution {
+#define DECIMAL 10
+class Solution 
+{
 public:
     int myAtoi(string s) 
     {
-        /*
-        1> Ignore spaces.
-        2> OnceNoStarted After that ignore any invalid character.
-        3>
-        */            
-        int iSize = s.size();
-        bool bNumStart = false, bSigned = false, bZeroEnd = false;
-        short iSign = 1;
-        long long int iDecimalPlace = 10, iNumber = 0;
-        short iDecimalCnt = 0;
+        lli iNumber = 0;
+        bool bNoStart = false, bNegative = false;
+        short iCnt = 0;
 
-        for (int i=0; i<iSize; ++i)
-        {            
-            if (s[i] == ' ' && (!bNumStart)) 
+        for (int i=0; i<s.size(); ++i)
+        {
+            if ((s[i] == ' ' || s[i] == '0') && !bNoStart)
             {
-                continue;
-            }
-            
-            if (s[i] == '+' || s[i] == '-') 
-            {
-                if (bNumStart || bSigned) {
-                    break;
-                }
-                iSign = (s[i]=='-') ? -1 : 1;
-                bSigned = true;
-                bNumStart = true;
+                bNoStart = (s[i] == '0');
                 continue;
             }
 
-            short iDiff = s[i] - '0';
-            if (iDiff > 9 || iDiff < 0)
+            if ((s[i] == '+' || s[i] == '-') && !bNoStart)
+            {
+                bNegative = (s[i] == '-');
+                bNoStart = true;
+                continue;
+            }
+
+            short iDigit = (s[i] - '0');
+            if (iDigit > 9 || iDigit < 0)
             {
                 break;
             }
-            
-            bNumStart = true;
-            bZeroEnd = (iDiff != 0) ? true: bZeroEnd;
-            if (iDecimalCnt > 10)
+            cout << iCnt << endl;
+            if (iCnt > 11)
             {
                 break;
             }
-            iNumber = (long long int)((iNumber * iDecimalPlace) + iDiff);
-            if (bZeroEnd) {
-                ++iDecimalCnt;
-            }
+            iNumber = (iNumber * (lli)DECIMAL) + (lli)iDigit;
+            ++iCnt;
         }
 
-        iNumber *= iSign;
-        iNumber  = (iNumber < MIN_INT_32) ? MIN_INT_32 : iNumber;
-        iNumber  = (iNumber > MAX_INT_32) ? MAX_INT_32 : iNumber;
+        iNumber = (bNegative) ? (-1 * iNumber) : iNumber;
+        cout << iNumber;
+        iNumber = max((lli)MIN_INT_32, iNumber);
+        iNumber = min((lli)MAX_INT_32, iNumber);
+
         return iNumber;
     }
 };
+
+
+int main ()
+{
+    Solution s;
+    s.myAtoi("21474836460");
+    return 0;
+}
