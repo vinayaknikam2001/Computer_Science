@@ -5,6 +5,8 @@ RevisedDate = NA
 Solution = Referanced
 TC = 1) O(1)    2) O(1)
 SC = 2) O(N)    2) O(N)
+
+Note : Monotonic stack is a stack which stores the element in a specific order.
 */
 
 
