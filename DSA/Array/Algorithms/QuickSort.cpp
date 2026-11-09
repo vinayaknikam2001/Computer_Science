@@ -1,4 +1,17 @@
-//GFG = https://www.geeksforgeeks.org/problems/quick-sort/1
+/*
+GFG = https://www.geeksforgeeks.org/problems/quick-sort/1
+Date = 08-Nov-2026
+RevisedDate = NA
+SC = O (1)
+TC = Best Case O (N * log2(N)) 
+     Worst Case O (N ^ 2)       {Check case 2 to understand worst case}
+
+TestCases:
+Case 1:
+int arr[] = {6, 2, 3, 5, 9, 1}
+Case 2:
+int arr[] = {5, 4, ,3, 2, 1}
+*/
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -44,8 +57,22 @@ class Solution {
             if (iLPtr < iRPtr)                  //!IMP
                 swap(arr[iLPtr], arr[iRPtr]);   //!IMP
         }
-        swap(arr[low], arr[iRPtr]);             //!IMP
+        swap(arr[low], arr[iRPtr]);             //!IMP Why we swap with Right Ptr only check case 1.
         
         return iRPtr;
     }
 };
+
+
+int main ()
+{
+
+    Solution s;
+    vector<int> vec = {5, 4, 3, 2, 1};
+    s.quickSort(vec, 0 , 4);
+    for (auto iVal:vec)
+    {
+        cout << iVal << " ";
+    }
+    return 0;
+}

@@ -1,14 +1,12 @@
-//GFG = https://www.geeksforgeeks.org/problems/merge-sort/1
+/*
+GFG = https://www.geeksforgeeks.org/problems/merge-sort/1
+Date = 08-Nov-2026
+RevisedDate = NA
+SC = O (N)
+TC = N * log2(N) (All best & worst case)
+*/
 #include <bits/stdc++.h>
 using namespace std;
-
-
-/*
-Merge Sort.
-TC = n(log2(n)) (All best & worst case)
-SC = O(N)
-*/
-
 
 typedef long long int lli;
 class Solution {
